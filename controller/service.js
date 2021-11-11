@@ -1,60 +1,28 @@
 const Service = require('../model/service');
+const APIFeatures = require('../utils/apiFeatures');
+
+exports.aliasTopTours = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  // req.query.fields = 'name,price,description,summary,tags';
+  next();
+};
 
 exports.getAllServices = async (req, res) => {
   try {
-    //Criar uma cópia da query
-    const queryObj = { ...req.query };
-
-    //Listar os campos para excluir
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
-
-    //Excluir os campos
-    excludedFields.forEach((el) => delete queryObj[el]);
-
-    //Converter para string
-    let queryStr = JSON.stringify(queryObj);
-
-    //Criar a string adequada com regex
-    queryStr = queryStr.replace(/\b(gt|gte|lte|lt)\b/g, (match) => `$${match}`);
-
-    //Criar a query
-    let query = Service.find(JSON.parse(queryStr));
-
-    //Ordenar os campos
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort('-createdAt');
-    }
-
-    //Selecionar os campos
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
-    } else {
-      query = query.select('-__v');
-    }
-
-    //Criar a páginação
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 100;
-    const skip = (page - 1) * limit;
-
-    query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      const numTours = await Tour.countDocuments();
-      if (skip >= numTours) throw new Error('Esta página não existe');
-    }
-
     //Executar a query
-    const service = await query;
+    const features = new APIFeatures(Service.find(), req.query)
+      .filter()
+      .limitFields()
+      .paginate()
+      .sort();
+    const services = await features.query;
 
     res.status(201).json({
       status: 'success',
+      results: services.length,
       data: {
-        service,
+        services,
       },
     });
   } catch (error) {

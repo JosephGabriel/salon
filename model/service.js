@@ -1,10 +1,15 @@
 const mongoose = require('mongoose');
+const { default: slugify } = require('slugify');
 
 const serviceSchema = mongoose.Schema({
   name: {
     type: String,
     trim: true,
     required: true,
+    unique: true,
+  },
+  slug: {
+    type: String,
   },
   tags: {
     type: [String],
@@ -26,6 +31,8 @@ const serviceSchema = mongoose.Schema({
   ratingsAverage: {
     type: Number,
     default: 0,
+    min: [1, 'A avaliação deve ser maior ou igual a 1.0'],
+    max: [5, 'A avaliação deve ser menor ou igual a 5.0'],
   },
   ratings: {
     type: Number,
@@ -36,6 +43,12 @@ const serviceSchema = mongoose.Schema({
   },
   priceDiscount: {
     type: Number,
+    validate: {
+      validator: function (val) {
+        return val < this.price;
+      },
+      message: 'O Desconto ({VALUE}) não deve ser menor que o valor normal',
+    },
   },
   category: {
     type: String,
@@ -49,6 +62,11 @@ const serviceSchema = mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
+});
+
+serviceSchema.pre('save', function (next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
 });
 
 const Service = mongoose.model('services', serviceSchema);
