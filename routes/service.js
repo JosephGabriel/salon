@@ -4,6 +4,8 @@ const router = express.Router();
 
 const serviceController = require('../controller/service');
 
+router.route('/top-5-services').get(serviceController.aliasTopServices);
+
 router
   .route('/')
   .get(serviceController.getAllServices)

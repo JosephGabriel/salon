@@ -5,7 +5,7 @@ const serviceSchema = mongoose.Schema({
   name: {
     type: String,
     trim: true,
-    required: true,
+    required: [true, 'Um serviço deve ter um nome'],
     unique: true,
   },
   slug: {

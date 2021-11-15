@@ -1,110 +1,76 @@
 const Service = require('../model/service');
 const APIFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
 
-exports.aliasTopTours = (req, res, next) => {
+exports.aliasTopServices = (req, res, next) => {
   req.query.limit = '5';
   req.query.sort = '-ratingsAverage,price';
   // req.query.fields = 'name,price,description,summary,tags';
   next();
 };
 
-exports.getAllServices = async (req, res) => {
-  try {
-    //Executar a query
-    const features = new APIFeatures(Service.find(), req.query)
-      .filter()
-      .limitFields()
-      .paginate()
-      .sort();
-    const services = await features.query;
+exports.getAllServices = catchAsync(async (req, res) => {
+  //Executar a query
+  const features = new APIFeatures(Service.find(), req.query)
+    .filter()
+    .limitFields()
+    .paginate()
+    .sort();
+  const services = await features.query;
 
-    res.status(201).json({
-      status: 'success',
-      results: services.length,
-      data: {
-        services,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      message: error,
-    });
-  }
-};
+  res.status(201).json({
+    status: 'success',
+    results: services.length,
+    data: {
+      services,
+    },
+  });
+});
 
-exports.getService = async (req, res) => {
-  try {
-    const service = await Service.findById(req.params.id);
+exports.getService = catchAsync(async (req, res) => {
+  const service = await Service.findById(req.params.id);
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        service,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      message: error,
-    });
-  }
-};
+  res.status(201).json({
+    status: 'success',
+    data: {
+      service,
+    },
+  });
+});
 
-exports.createService = async (req, res) => {
-  try {
-    const service = await Service.create(req.body);
+exports.createService = catchAsync(async (req, res) => {
+  const service = await Service.create(req.body);
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        service,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      message: error,
-    });
-  }
-};
+  res.status(201).json({
+    status: 'success',
+    data: {
+      service,
+    },
+  });
+});
 
-exports.updateService = async (req, res) => {
-  try {
-    const service = await Service.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+exports.updateService = catchAsync(async (req, res) => {
+  const service = await Service.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        service,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      message: error,
-    });
-  }
-};
+  res.status(200).json({
+    status: 'success',
+    data: {
+      service,
+    },
+  });
+});
 
-exports.deleteService = async (req, res) => {
-  try {
-    const service = await Service.findByIdAndDelete(req.params.id, {
-      new: true,
-    });
+exports.deleteService = catchAsync(async (req, res) => {
+  const service = await Service.findByIdAndDelete(req.params.id, {
+    new: true,
+  });
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        service,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      message: error,
-    });
-  }
-};
+  res.status(200).json({
+    status: 'success',
+    data: {
+      service,
+    },
+  });
+});
