@@ -10,6 +10,7 @@ const globalErrorHandler = require('./controller/error');
 const AppError = require('./utils/appError');
 
 const serviceRouter = require('./routes/service');
+const userRouter = require('./routes/user');
 
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(express.static(`${__dirname}/public`));
 
 app.use('/api/v1/services', serviceRouter);
+app.use('/api/v1/users', userRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Não foi possivel achar: ${req.originalUrl}`, 404));

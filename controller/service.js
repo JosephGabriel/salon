@@ -1,4 +1,4 @@
-const Service = require('../model/service');
+const Service = require('../models/service');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 

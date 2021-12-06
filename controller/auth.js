@@ -11,7 +11,7 @@ const signupToken = (id) => {
   });
 };
 
-const createSendUser = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, res) => {
   const token = signupToken(user._id);
 
   const cookieOptions = {
@@ -46,5 +46,26 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm,
   });
 
-  createSendUser(newUser, 200, res);
+  createSendToken(newUser, 200, res);
+});
+
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(
+      new AppError(
+        'Para fazer login é necessário fornecer email e senha válidos',
+        400
+      )
+    );
+  }
+
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || (await user.correctPassword(password, user.password))) {
+    return next(new AppError('Email ou senha inválida', 401));
+  }
+
+  createSendToken(user, 200, res);
 });
