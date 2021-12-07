@@ -69,3 +69,44 @@ exports.login = catchAsync(async (req, res, next) => {
 
   createSendToken(user, 200, res);
 });
+
+exports.protect = catchAsync(async (req, res, next) => {
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next(
+      new AppError(
+        'Você não esta logado! É necessário fazer login para ter acesso',
+        401
+      )
+    );
+  }
+
+  const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+
+  const freshUser = await User.findOne({ _id: decoded.id });
+
+  if (!freshUser) {
+    return next(new AppError('Token inválido', 401));
+  }
+
+  if (freshUser.changedPassword(decoded.iat)) {
+    return next(
+      new AppError(
+        'O usúario trocou a senha recentemente, é necessário fazer login novamente',
+        401
+      )
+    );
+  }
+
+  req.user = freshUser;
+
+  next();
+});
